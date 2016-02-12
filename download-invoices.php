@@ -9,15 +9,22 @@ if (!$session) {
 mkdir("CNIP - Refunds");
 mkdir("IVIP - Sales");
 mkdir("IVSF - Fees");
+mkdir("IVBF - Buyer Fee");
+mkdir("Unknown");
 
 $data = array_map('str_getcsv', file('input.csv'));
 $currentRow = 1;
 $numberOfRows = count($data);
 foreach ($data as $row) {
-    $currentRow++;
-    $id = $row[5];    
-    $prefix = substr($id, 0, 4);
-    $id = substr($id, 4);
+    $currentRow++;    
+    
+    $fullId = $row[5];
+    if (!$fullId) {
+        continue;
+    }
+    
+    $prefix = substr($fullId, 0, 4);
+    $id = substr($fullId, 4);
     $url = '';
     
     switch ($prefix) {
@@ -31,8 +38,14 @@ foreach ($data as $row) {
             $file = 'CNIP - Refunds/CNIP' . $id . '.pdf';
             break;
             
+        case 'IVBF':
+            $url = 'http://codecanyon.net/financial_document/invoices/buyer_fees/' . $id;
+            $file = 'IVBF - Buyer Fee/IVBF' . $id . '.pdf';
+            break;
+            
         default:
-            continue 2;
+            file_put_contents('Unknown/' . $fullId, '');
+            continue;
     }
     
     echo "Downloading '$file' (row $currentRow of $numberOfRows)\n";
